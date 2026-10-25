@@ -1,0 +1,1 @@
+print("hello from Kubernets and Docker Integration!")
