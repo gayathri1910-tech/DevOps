@@ -10,11 +10,11 @@ pipeline {
         stage('Validate Project Files') {
             steps {
                 dir('triggerflow') {
-                    powershell '''
-                        if (!(Test-Path "index.html")) { throw "index.html not found" }
-                        if (!(Test-Path "style.css")) { throw "style.css not found" }
-                        if (!(Test-Path "Dockerfile")) { throw "Dockerfile not found" }
-                        Write-Host "Required project files are present."
+                    bat '''
+                        if not exist index.html exit /b 1
+                        if not exist style.css exit /b 1
+                        if not exist Dockerfile exit /b 1
+                        echo Required project files are present.
                     '''
                 }
             }
@@ -22,35 +22,21 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('triggerflow') {
-                    powershell '& "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t triggerflow-web:$env:BUILD_NUMBER .'
+                    bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t triggerflow-web:%BUILD_NUMBER% .'
                 }
             }
         }
         stage('Deploy Container') {
             steps {
-                powershell '''
-                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop triggerflow-app -ErrorAction SilentlyContinue
-                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm triggerflow-app -ErrorAction SilentlyContinue
-                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 8081:80 --name triggerflow-app triggerflow-web:$env:BUILD_NUMBER
-                '''
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop triggerflow-app || true'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm triggerflow-app || true'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 8081:80 --name triggerflow-app triggerflow-web:%BUILD_NUMBER%'
             }
         }
         stage('Smoke Test') {
             steps {
-                powershell '''
-                    foreach ($i in 1..5) {
-                        try {
-                            $response = Invoke-WebRequest -Uri "http://localhost:8081" -UseBasicParsing
-                            if ($response.StatusCode -eq 200) {
-                                Write-Host "App is responding successfully!"
-                                exit 0
-                            }
-                        } catch {
-                            Write-Host "Attempt $i: Waiting for app..."
-                            Start-Sleep -Seconds 3
-                        }
-                    }
-                    throw "Smoke test failed: App did not respond."
+                bat '''
+                    powershell -Command "foreach ($i in 1..5) { try { $res = Invoke-WebRequest -Uri 'http://localhost:8081' -UseBasicParsing; if ($res.StatusCode -eq 200) { exit 0 } } catch { Start-Sleep -Seconds 3 } } exit 1"
                 '''
             }
         }
