@@ -5,12 +5,12 @@ pipeline {
         pollSCM('H/2 * * * *')
     }
 
-    environment {
+environment {
         IMAGE_NAME = 'triggerflow-web'
         CONTAINER_NAME = 'triggerflow-web'
         HOST_PORT = '8081'
-        // Point directly to Docker's executable path on Windows
-        DOCKER_BIN = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
+        // Correct path to Docker executable on Windows
+        DOCKER_BIN = 'C:\\Program Files\\Docker\\Docker\\docker.exe'
     }
 
     stages {
