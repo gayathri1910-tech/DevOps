@@ -35,8 +35,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 dir('triggerflow') {
-                    bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
-                    bat 'docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:latest'
+                    bat 'docker build -t triggerflow-web:${BUILD_NUMBER} .'
                 }
             }
         }
