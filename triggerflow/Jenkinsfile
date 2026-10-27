@@ -33,19 +33,20 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            steps {
-                dir('triggerflow') {
-                    bat 'docker build -t triggerflow-web:${BUILD_NUMBER} .'
-                }
-            }
+    steps {
+        dir('triggerflow') {
+            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t triggerflow-web:${BUILD_NUMBER} .'
         }
+    }
+}
 
         stage('Deploy Container') {
-            steps {
-                bat 'docker rm -f %CONTAINER_NAME% || true'
-                bat 'docker run -d --name %CONTAINER_NAME% --restart unless-stopped -p %HOST_PORT%:80 %IMAGE_NAME%:%BUILD_NUMBER%'
-            }
-        }
+    steps {
+        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop triggerflow-app || true'
+        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm triggerflow-app || true'
+        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 8081:80 --name triggerflow-app triggerflow-web:${BUILD_NUMBER}'
+    }
+}
 
         stage('Smoke Test') {
             steps {
