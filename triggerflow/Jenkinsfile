@@ -7,9 +7,9 @@ pipeline {
     // For Poll SCM: uncomment the cron line below.
     // For scheduled execution: use a cron expression such as H 9 * * 1-5.
     triggers {
-        // pollSCM('H/5 * * * *')
-        // cron('H 9 * * 1-5')
-    }
+    pollSCM('H/2 * * * *')
+    // cron('H 9 * * 1-5')
+}
 
     environment {
         IMAGE_NAME = 'triggerflow-web'
