@@ -26,16 +26,15 @@ pipeline {
         }
 
         stage('Validate Project Files') {
-            steps {
-                bat '''
-                    test -f index.html
-                    test -f style.css
-                    test -f Dockerfile
-                    echo "Required project files are present."
-                '''
-            }
+        steps {
+            bat '''
+                if not exist index.html exit /b 1
+                if not exist style.css exit /b 1
+                if not exist Dockerfile exit /b 1
+                echo Required project files are present.
+            '''
         }
-
+    }
         stage('Build Docker Image') {
             steps {
                 bat 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .'
