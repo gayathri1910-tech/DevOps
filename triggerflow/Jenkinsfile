@@ -1,71 +1,58 @@
 pipeline {
     agent any
 
-    triggers {
-        pollSCM('H/2 * * * *')
-    }
-
-    environment {
-        IMAGE_NAME = 'triggerflow-web'
-        CONTAINER_NAME = 'triggerflow-web'
-        HOST_PORT = '8081'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo 'Source code checked out successfully.'
             }
         }
-
         stage('Validate Project Files') {
             steps {
                 dir('triggerflow') {
-                    bat '''
-                        if not exist index.html exit /b 1
-                        if not exist style.css exit /b 1
-                        if not exist Dockerfile exit /b 1
-                        echo Required project files are present.
+                    powershell '''
+                        if (!(Test-Path "index.html")) { throw "index.html not found" }
+                        if (!(Test-Path "style.css")) { throw "style.css not found" }
+                        if (!(Test-Path "Dockerfile")) { throw "Dockerfile not found" }
+                        Write-Host "Required project files are present."
                     '''
                 }
             }
         }
-
         stage('Build Docker Image') {
-    steps {
-        dir('triggerflow') {
-            bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t triggerflow-web:${BUILD_NUMBER} .'
-        }
-    }
-}
-
-        stage('Deploy Container') {
-    steps {
-        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop triggerflow-app || true'
-        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm triggerflow-app || true'
-        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 8081:80 --name triggerflow-app triggerflow-web:${BUILD_NUMBER}'
-    }
-}
-
-        stage('Smoke Test') {
             steps {
-                bat '''
-                    powershell -Command "foreach ($i in 1..5) { try { $res = Invoke-WebRequest -Uri http://localhost:%HOST_PORT%/ -UseBasicParsing; if ($res.Content -match 'TriggerFlow') { Write-Host 'Smoke test passed.'; exit 0 } } catch { Start-Sleep -Seconds 2 } }; Write-Host 'Smoke test failed.'; exit 1"
+                dir('triggerflow') {
+                    powershell '& "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t triggerflow-web:$env:BUILD_NUMBER .'
+                }
+            }
+        }
+        stage('Deploy Container') {
+            steps {
+                powershell '''
+                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" stop triggerflow-app -ErrorAction SilentlyContinue
+                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" rm triggerflow-app -ErrorAction SilentlyContinue
+                    & "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" run -d -p 8081:80 --name triggerflow-app triggerflow-web:$env:BUILD_NUMBER
                 '''
             }
         }
-    }
-
-    post {
-        success {
-            echo "TriggerFlow deployed successfully at http://localhost:8081"
-        }
-        failure {
-            echo 'Pipeline failed. Check the Console Output for the failing stage.'
-        }
-        always {
-            echo "Build number: ${BUILD_NUMBER}"
+        stage('Smoke Test') {
+            steps {
+                powershell '''
+                    foreach ($i in 1..5) {
+                        try {
+                            $response = Invoke-WebRequest -Uri "http://localhost:8081" -UseBasicParsing
+                            if ($response.StatusCode -eq 200) {
+                                Write-Host "App is responding successfully!"
+                                exit 0
+                            }
+                        } catch {
+                            Write-Host "Attempt $i: Waiting for app..."
+                            Start-Sleep -Seconds 3
+                        }
+                    }
+                    throw "Smoke test failed: App did not respond."
+                '''
+            }
         }
     }
 }
