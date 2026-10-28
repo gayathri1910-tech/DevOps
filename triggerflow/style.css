@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 * { box-sizing: border-box; }
 body {
   margin: 0; min-height: 100vh; display: grid; place-items: center;
@@ -17,3 +18,21 @@ h1 { margin: 8px 0; font-size: clamp(36px, 7vw, 56px); }
 section { margin-top: 16px; padding: 18px 22px; border-radius: 12px; background: #f7f9fc; }
 li { margin: 12px 0; line-height: 1.5; }
 .footer { margin-top: 24px; color: #64748b; font-size: 13px; }
+=======
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    text-align: center;
+    padding-top: 50px;
+}
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    display: inline-block;
+}
+h1 {
+    color: #008299;
+}
+>>>>>>> 0896a6b63b9e881b61c59321034e8a9d77696717

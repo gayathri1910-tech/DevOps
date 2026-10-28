@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+<<<<<<< HEAD
     triggers {
         pollSCM('H/2 * * * *')
     }
@@ -12,14 +13,21 @@ pipeline {
         DOCKER_BIN = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
     }
 
+=======
+>>>>>>> 0896a6b63b9e881b61c59321034e8a9d77696717
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+<<<<<<< HEAD
                 echo 'Source code checked out successfully.'
             }
         }
 
+=======
+            }
+        }
+>>>>>>> 0896a6b63b9e881b61c59321034e8a9d77696717
         stage('Validate Project Files') {
             steps {
                 dir('triggerflow') {
@@ -27,11 +35,16 @@ pipeline {
                         if not exist index.html exit /b 1
                         if not exist style.css exit /b 1
                         if not exist Dockerfile exit /b 1
+<<<<<<< HEAD
                         echo Required project files are present.
+=======
+                        echo Required project files are present and verified.
+>>>>>>> 0896a6b63b9e881b61c59321034e8a9d77696717
                     '''
                 }
             }
         }
+<<<<<<< HEAD
 
         stage('Build Docker Image') {
             steps {
@@ -68,5 +81,12 @@ pipeline {
         always {
             echo "Build number: ${BUILD_NUMBER}"
         }
+=======
+        stage('Pipeline Integration Check') {
+            steps {
+                echo "TriggerFlow CI/CD Pipeline workflow executed successfully!"
+            }
+        }
+>>>>>>> 0896a6b63b9e881b61c59321034e8a9d77696717
     }
 }
