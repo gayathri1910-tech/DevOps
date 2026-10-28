@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Experiment 4 - Jenkins Setup') {
+            steps {
+                bat 'echo Jenkins installation successful'
+                bat 'echo Experiment 4 completed'
+                bat 'java -version'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Experiment 4 completed successfully!'
+        }
+        failure {
+            echo 'Experiment 4 failed. Check the console output.'
+        }
+    }
+}
